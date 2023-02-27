@@ -1,6 +1,22 @@
 import { ConnectError, createPromiseClient } from "@bufbuild/connect";
 import { createGrpcWebTransport } from "@bufbuild/connect-web";
+import "@fontsource/roboto/300.css";
+import "@fontsource/roboto/400.css";
+import "@fontsource/roboto/500.css";
+import "@fontsource/roboto/700.css";
+import {
+  Box,
+  Button,
+  Grid,
+  List,
+  ListItem,
+  ListItemText,
+  Tab,
+  Tabs,
+  TextField,
+} from "@mui/material";
 import { useState } from "react";
+import TabPanel from "./api/components/TabPanel";
 import { InterviewService } from "./api/interview_service_connectweb";
 import "./App.css";
 
@@ -15,6 +31,8 @@ function App() {
   const [helloError, setHelloError] = useState(false);
 
   const [data, setData] = useState([] as string[]);
+
+  const [currentTab, setCurrentTab] = useState(0);
 
   async function handleHello(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -34,35 +52,48 @@ function App() {
     }
   }
 
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setCurrentTab(newValue);
+  };
+
   return (
     <>
-      <section>
+      <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+        <Tabs value={currentTab} onChange={handleTabChange}>
+          <Tab label="Hello" />
+          <Tab label="Data Stream" />
+        </Tabs>
+      </Box>
+      <TabPanel value={currentTab} index={0}>
         <form onSubmit={handleHello}>
-          <input
-            value={helloInput}
-            onChange={(e) => setHelloInput(e.target.value)}
-          />
-          <button type="submit">Send</button>
+          <Grid container={true}>
+            <TextField
+              label="Send a message"
+              value={helloInput}
+              error={helloError}
+              helperText={
+                helloError && 'Your message must include the word "hello"'
+              }
+              onChange={(e) => setHelloInput(e.target.value)}
+            />
+            <Button type="submit">Send</Button>
+          </Grid>
           <br />
-          {helloError ? (
-            <span style={{ color: "red" }}>
-              Your message must include the word "hello"
-            </span>
-          ) : (
-            helloReply
-          )}
+          {!helloError && helloReply}
         </form>
-      </section>
-      <section>
-        <button type="button" onClick={startStreaming}>
+      </TabPanel>
+      <TabPanel value={currentTab} index={1}>
+        <Button type="button" onClick={startStreaming}>
           Start Streaming
-        </button>
-        <ul>
+        </Button>
+        <List>
           {data.map((datum, i) => (
-            <li key={i}>{datum}</li>
+            <ListItem key={i}>
+              <ListItemText>{datum}</ListItemText>
+            </ListItem>
           ))}
-        </ul>
-      </section>
+        </List>
+      </TabPanel>
     </>
   );
 }
