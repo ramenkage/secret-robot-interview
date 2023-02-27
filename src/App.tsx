@@ -14,6 +14,8 @@ function App() {
   const [helloReply, setHelloReply] = useState("");
   const [helloError, setHelloError] = useState(false);
 
+  const [data, setData] = useState([] as string[]);
+
   async function handleHello(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     try {
@@ -26,9 +28,14 @@ function App() {
     }
   }
 
+  async function startStreaming() {
+    for await (const response of client.dataStream({})) {
+      setData((oldData) => [...oldData, response.data]);
+    }
+  }
+
   return (
     <>
-      <header>Header</header>
       <section>
         <form onSubmit={handleHello}>
           <input
@@ -37,10 +44,24 @@ function App() {
           />
           <button type="submit">Send</button>
           <br />
-          {helloError
-            ? 'Your message must include the word "hello"'
-            : helloReply}
+          {helloError ? (
+            <span style={{ color: "red" }}>
+              Your message must include the word "hello"
+            </span>
+          ) : (
+            helloReply
+          )}
         </form>
+      </section>
+      <section>
+        <button type="button" onClick={startStreaming}>
+          Start Streaming
+        </button>
+        <ul>
+          {data.map((datum, i) => (
+            <li key={i}>{datum}</li>
+          ))}
+        </ul>
       </section>
     </>
   );
