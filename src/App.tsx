@@ -1,24 +1,48 @@
+import { ConnectError, createPromiseClient } from "@bufbuild/connect";
+import { createGrpcWebTransport } from "@bufbuild/connect-web";
+import { useState } from "react";
+import { InterviewService } from "./api/interview_service_connectweb";
 import "./App.css";
-import logo from "./logo.svg";
+
+const transport = createGrpcWebTransport({
+  baseUrl: "http://10.1.10.101:8082",
+});
+const client = createPromiseClient(InterviewService, transport);
 
 function App() {
+  const [helloInput, setHelloInput] = useState("");
+  const [helloReply, setHelloReply] = useState("");
+  const [helloError, setHelloError] = useState(false);
+
+  async function handleHello(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    try {
+      const response = await client.hello({ message: helloInput });
+      setHelloReply(response.reply);
+      setHelloError(false);
+    } catch (e) {
+      if (!(e instanceof ConnectError)) throw e;
+      if (e.message === "[unknown] NotPolite") setHelloError(true);
+    }
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <header>Header</header>
+      <section>
+        <form onSubmit={handleHello}>
+          <input
+            value={helloInput}
+            onChange={(e) => setHelloInput(e.target.value)}
+          />
+          <button type="submit">Send</button>
+          <br />
+          {helloError
+            ? 'Your message must include the word "hello"'
+            : helloReply}
+        </form>
+      </section>
+    </>
   );
 }
 
