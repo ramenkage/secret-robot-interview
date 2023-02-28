@@ -16,9 +16,9 @@ import {
   TextField,
 } from "@mui/material";
 import { useState } from "react";
-import TabPanel from "./api/components/TabPanel";
 import { InterviewService } from "./api/interview_service_connectweb";
 import "./App.css";
+import TabPanel from "./components/TabPanel";
 
 const transport = createGrpcWebTransport({
   baseUrl: "http://10.1.10.101:8082",
